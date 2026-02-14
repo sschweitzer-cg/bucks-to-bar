@@ -53,16 +53,16 @@ Bucks2Bar is a client-side income and expense tracker with:
 
 ---
 
-### **ID 4** Add data backup warning on localStorage quota
-**Status:** PENDING  
+### **ID 4** ✅ Add data backup warning on localStorage quota
+**Status:** COMPLETED (Commit: 623fa4a)  
 **Priority:** P1 | **Scope:** S  
 **Why:** `saveToLocalStorage()` catches errors but user has no proactive warning  
 **Acceptance Criteria:**
-- [ ] Check localStorage size before save operations
-- [ ] Show warning banner when > 80% quota used
-- [ ] Suggest export/cleanup actions
+- [x] Check localStorage size before save operations
+- [x] Show warning banner when > 80% quota used
+- [x] Suggest export/cleanup actions
 
-**Files to Modify:** `script.js`, `styles.css`
+**Files Modified:** `script.js`, `styles.css`
 
 ---
 
