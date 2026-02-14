@@ -80,17 +80,17 @@ Bucks2Bar is a client-side income and expense tracker with:
 
 ---
 
-### **ID 6** Add transaction search/filter by description
-**Status:** PENDING  
+### **ID 6** ✅ Add transaction search/filter by description
+**Status:** COMPLETED (Commit: ef2334b)  
 **Priority:** P2 | **Scope:** S  
 **Why:** Current filter only supports month; users need text search  
 **Acceptance Criteria:**
-- [ ] Add search input above transaction list
-- [ ] Filter in real-time by description (case-insensitive)
-- [ ] Combine with existing month filter
-- [ ] Show "X results" count
+- [x] Add search input above transaction list
+- [x] Filter in real-time by description (case-insensitive)
+- [x] Combine with existing month filter
+- [x] Show "X results" count
 
-**Files to Modify:** `index.html`, `script.js`
+**Files Modified:** `index.html`, `script.js`, `styles.css`
 
 ---
 
