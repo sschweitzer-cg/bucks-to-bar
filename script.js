@@ -32,6 +32,7 @@ const BUDGETS = {
 let appState = {
     transactions: [],
     currentFilter: 'all',
+    searchQuery: '',
     editingId: null
 };
 
@@ -260,13 +261,22 @@ function deleteTransaction(id) {
 }
 
 function getFilteredTransactions() {
-    if (appState.currentFilter === 'all') {
-        return appState.transactions;
+    let filtered = appState.transactions;
+    
+    // Filter by month
+    if (appState.currentFilter !== 'all') {
+        filtered = filtered.filter(t => t.date.startsWith(appState.currentFilter));
     }
     
-    return appState.transactions.filter(t => {
-        return t.date.startsWith(appState.currentFilter);
-    });
+    // Filter by search query
+    if (appState.searchQuery.trim() !== '') {
+        const query = appState.searchQuery.toLowerCase();
+        filtered = filtered.filter(t => 
+            t.description.toLowerCase().includes(query)
+        );
+    }
+    
+    return filtered;
 }
 
 // ==================== UI MANAGEMENT ====================
@@ -323,11 +333,23 @@ function renderTransactions() {
     const container = document.getElementById('transactions-container');
     const transactions = getFilteredTransactions();
     
+    // Update result count
+    const resultCount = document.getElementById('result-count');
+    if (resultCount) {
+        const isFiltering = appState.currentFilter !== 'all' || appState.searchQuery.trim() !== '';
+        if (isFiltering) {
+            resultCount.textContent = `${transactions.length} result${transactions.length !== 1 ? 's' : ''}`;
+            resultCount.style.display = 'inline';
+        } else {
+            resultCount.style.display = 'none';
+        }
+    }
+    
     if (transactions.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <h3>No transactions yet</h3>
-                <p>Add your first transaction to get started!</p>
+                <h3>No transactions found</h3>
+                <p>${appState.searchQuery ? 'Try a different search term' : 'Add your first transaction to get started!'}</p>
             </div>
         `;
         return;
@@ -363,6 +385,12 @@ function renderTransactions() {
 function filterTransactions() {
     const monthFilter = document.getElementById('month-filter').value;
     appState.currentFilter = monthFilter;
+    renderTransactions();
+}
+
+function searchTransactions() {
+    const searchInput = document.getElementById('search-input');
+    appState.searchQuery = searchInput.value;
     renderTransactions();
 }
 

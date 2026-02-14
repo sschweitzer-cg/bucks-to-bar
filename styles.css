@@ -279,16 +279,48 @@ button {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.list-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .list-header h2 {
     color: #333;
+    margin: 0;
+}
+
+.result-count {
+    color: #667eea;
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 4px 12px;
+    background: #e8ebf9;
+    border-radius: 12px;
 }
 
 .filter-group {
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+.search-input {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    min-width: 200px;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
 }
 
 .filter-group label {

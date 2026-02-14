@@ -68,9 +68,13 @@
             
             <div class="transactions-list">
                 <div class="list-header">
-                    <h2>Transaction History</h2>
+                    <div class="list-header-left">
+                        <h2>Transaction History</h2>
+                        <span id="result-count" class="result-count" style="display: none;"></span>
+                    </div>
                     <div class="filter-group">
-                        <label for="month-filter">Filter by Month:</label>
+                        <input type="text" id="search-input" class="search-input" placeholder="Search transactions..." oninput="searchTransactions()">
+                        <label for="month-filter">Month:</label>
                         <select id="month-filter" onchange="filterTransactions()">
                             <option value="all">All Months</option>
                             <option value="2026-01">January 2026</option>
