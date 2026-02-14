@@ -15,8 +15,10 @@ export function switchTab(tabName, updateInsightsCallback) {
     // Update tab buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('active');
+        if (btn.textContent.toLowerCase().includes(tabName)) {
+            btn.classList.add('active');
+        }
     });
-    event.target.classList.add('active');
     
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
