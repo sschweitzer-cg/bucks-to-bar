@@ -45,6 +45,7 @@ function saveToLocalStorage() {
             transactions: appState.transactions
         };
         localStorage.setItem('bucks2bar_data', JSON.stringify(data));
+        checkLocalStorageQuota();
     } catch (e) {
         console.error('Failed to save data:', e);
         alert('Failed to save data. Storage might be full.');
@@ -63,6 +64,57 @@ function loadFromLocalStorage() {
         console.error('Failed to load data:', e);
     }
     return false;
+}
+
+function checkLocalStorageQuota() {
+    try {
+        let totalSize = 0;
+        for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                totalSize += localStorage[key].length + key.length;
+            }
+        }
+        
+        // Estimate: ~5MB typical quota (5 * 1024 * 1024 bytes)
+        const estimatedQuota = 5 * 1024 * 1024;
+        const usagePercent = (totalSize / estimatedQuota) * 100;
+        
+        if (usagePercent > 80) {
+            showStorageWarning(usagePercent.toFixed(1));
+        } else {
+            hideStorageWarning();
+        }
+    } catch (e) {
+        console.error('Failed to check quota:', e);
+    }
+}
+
+function showStorageWarning(percent) {
+    let banner = document.getElementById('storage-warning-banner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'storage-warning-banner';
+        banner.className = 'storage-warning';
+        banner.innerHTML = `
+            <div class="storage-warning-content">
+                <span class="storage-warning-icon">⚠️</span>
+                <div class="storage-warning-text">
+                    <strong>Storage Warning:</strong> You're using ${percent}% of available space.
+                    <a href="#" onclick="event.preventDefault(); exportJSON(); hideStorageWarning();">Export your data</a> to backup.
+                </div>
+                <button class="storage-warning-close" onclick="hideStorageWarning()" aria-label="Close warning">✕</button>
+            </div>
+        `;
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+    banner.style.display = 'block';
+}
+
+function hideStorageWarning() {
+    const banner = document.getElementById('storage-warning-banner');
+    if (banner) {
+        banner.style.display = 'none';
+    }
 }
 
 function initializeDemoData() {
