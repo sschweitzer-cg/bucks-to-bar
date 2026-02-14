@@ -1,189 +1,227 @@
-# Bucks2Bar - Project TODO List
+# Bucks2Bar - AI Coding Instructions
 
-**Last Updated:** February 14, 2026  
-**Status:** Active Development
+## Architecture Overview
 
-## Project Overview
-Bucks2Bar is a client-side income and expense tracker with:
-- ✅ Transaction management (add, edit, delete)
-- ✅ CSV/JSON export and import
-- ✅ Visual charts and budget tracking
-- ✅ LocalStorage persistence
-- ✅ Responsive design
+**Bucks2Bar** is a **modular ES6 client-side expense tracker** with NO build process and NO backend. All code runs in the browser using vanilla JavaScript modules.
 
----
+### Key Architecture Pattern: Callback-Based Module Orchestration
 
-## Active TODO List
+The app uses **dependency injection via callbacks** instead of tight coupling. Modules export pure functions that accept callbacks to trigger side effects (UI updates, insights refresh). This enables:
+- Testing modules in isolation
+- Clear data flow (state → storage → UI)
+- Easy migration to frameworks later (state management already separated)
 
-### **ID 1** ✅ Initialize Git repository and create .github structure
-**Status:** COMPLETED  
-**Priority:** P1 | **Scope:** S  
-**Why:** Enable version control, create canonical location for copilot-instructions.md  
-**Acceptance Criteria:**
-- [x] Git repository initialized with `.gitignore`
-- [x] `.github/copilot-instructions.md` created with TODO list
-- [x] Initial commit with message "Initial commit: Bucks2Bar expense tracker"
+**Critical:** `script.js` is the **orchestrator** that wires modules together. It imports functions and passes render/update callbacks down to business logic modules.
 
----
+## Module Structure & Responsibilities
 
-### **ID 2** Add mobile responsive improvements for transaction grid
-**Status:** PENDING  
-**Priority:** P2 | **Scope:** M  
+```
+modules/
+├── constants.js      - CATEGORIES, DEFAULT_BUDGETS, STORAGE_CONFIG (single source of truth)
+├── state.js          - appState object + getFilteredTransactions() (centralized state)
+├── storage.js        - LocalStorage CRUD + quota monitoring (5MB limit awareness)
+├── transactions.js   - Business logic: addTransaction(), updateTransaction(), deleteTransaction()
+├── ui.js            - DOM manipulation: renderTransactions(), switchTab(), resetForm()
+├── charts.js        - Chart.js integration: updateInsights() renders all charts
+└── import-export.js - CSV/JSON export/import with validation
+```
+
+**Entry point:** `script.js` (135 lines) - Sets up event listeners, initializes app
+
+## Code Patterns You MUST Follow
+
+### 1. Module Exports Pattern
+```javascript
+// ✅ CORRECT: Export named functions
+export function addTransaction(data, renderCallback, updateCallback) {
+  // Business logic here
+  saveToLocalStorage();
+  renderCallback();      // Trigger UI update
+  updateCallback();      // Trigger insights update
+}
+
+// ❌ WRONG: Don't export classes or default exports (not used in this codebase)
+```
+
+### 2. Callback Injection for Side Effects
+When modifying `transactions.js` or `storage.js`:
+```javascript
+// ✅ CORRECT: Accept callbacks for UI updates
+export function deleteTransaction(id, renderCallback, updateCallback) {
+  appState.transactions = appState.transactions.filter(t => t.id !== id);
+  saveToLocalStorage();
+  renderCallback();     // Don't call renderTransactions() directly!
+  updateCallback();
+}
+```
+
+**Why:** This keeps modules decoupled. `transactions.js` doesn't import from `ui.js`.
+
+### 3. State Management Rules
+- **ALL state lives in `state.js`:** `appState` object is the single source of truth
+- **Never mutate state in UI modules:** Only `transactions.js` modifies `appState.transactions`
+- **Use state setters:** `setFilter()`, `setSearchQuery()`, `setEditingId()` in `state.js`
+
+```javascript
+// ✅ CORRECT: Use setter from state.js
+import { setEditingId } from './modules/state.js';
+setEditingId(transaction.id);
+
+// ❌ WRONG: Direct mutation
+appState.editingId = transaction.id;
+```
+
+### 4. LocalStorage Quota Awareness
+**Critical:** Storage has ~5MB limit. The app monitors this via `checkLocalStorageQuota()`.
+
+When adding storage features:
+```javascript
+import { saveToLocalStorage, checkLocalStorageQuota } from './modules/storage.js';
+
+// Always check quota before large operations
+checkLocalStorageQuota();  // Shows warning if > 80% used
+saveToLocalStorage();
+```
+
+### 5. Transaction Object Structure
+**DO NOT change this schema without updating storage.js:**
+```javascript
+{
+  id: "uuid-string",           // crypto.randomUUID()
+  type: "income" | "expense",  // MUST be one of these two strings
+  amount: 123.45,              // Number (not string!)
+  category: "groceries",       // Key from CATEGORIES in constants.js
+  date: "2026-02-14",          // YYYY-MM-DD format (ISO 8601 date part)
+  description: "Weekly shopping",
+  timestamp: 1708012800000     // Unix timestamp for sorting
+}
+```
+
+### 6. JSDoc Type Annotations
+**All modules use JSDoc for type safety** (no TypeScript build). Continue this pattern:
+```javascript
+/**
+ * Adds a new transaction
+ * @param {Object} transaction - Transaction data
+ * @param {function} renderCallback - Callback to re-render UI
+ * @param {function} updateInsightsCallback - Callback to update insights
+ */
+export function addTransaction(transaction, renderCallback, updateInsightsCallback) {
+  // ...
+}
+```
+
+## Critical Workflows
+
+### Running Locally
+```powershell
+# Must use local server (ES6 modules require http://)
+npm install -g http-server
+http-server -p 8080 -o
+```
+**Do NOT open index.html directly in browser** - ES6 modules fail with `file://` protocol.
+
+### Testing Changes
+1. Make code changes
+2. Refresh browser (no build step!)
+3. Check browser console for errors
+4. Test in "Data" tab first, then "Insights" tab
+5. Verify LocalStorage: DevTools → Application → Local Storage
+
+### Adding a New Feature
+1. **Identify which module** (business logic → `transactions.js`, UI → `ui.js`, etc.)
+2. **Update constants.js** if adding categories/config
+3. **Add state to state.js** if tracking new UI state
+4. **Export function from module**
+5. **Import and wire in script.js** with callbacks
+6. **Update index.html** if new DOM elements needed
+
+## File Modification Guidelines
+
+### When to edit `script.js` (orchestrator)
+- Adding new event listeners
+- Wiring new module functions with callbacks
+- Initializing new features on page load
+
+### When to edit module files
+- **constants.js**: Adding categories, changing budgets, config values
+- **state.js**: Adding new state properties or filters
+- **transactions.js**: Transaction CRUD operations (add recurring transactions here!)
+- **ui.js**: DOM manipulation, rendering, form handling
+- **charts.js**: Chart.js visualizations (all charts rendered here)
+- **import-export.js**: CSV/JSON export/import logic
+
+### When to edit `index.html`
+- Adding form fields, tabs, or new UI sections
+- **IMPORTANT:** Still uses `onclick` attributes (legacy pattern). See TODO ID 4 in code review to migrate to event delegation.
+
+## Common Gotchas
+
+1. **Inline onclick handlers:** `index.html` still uses `onclick="switchTab('data')"` - this is intentional for now (works with modules via `window.switchTab`)
+2. **Chart.js CDN:** Don't add build process! Charts loaded via CDN in `<head>`
+3. **Date format:** Always `YYYY-MM-DD` for `transaction.date` - used for month filtering (`date.startsWith(appState.currentFilter)`)
+4. **Demo data:** First-time users get 8 sample transactions from `initializeDemoData()` in `transactions.js`
+5. **No error boundaries:** Errors appear in console - always check DevTools when adding features
+
+## Quick Reference
+
+| Task | Module | Key Function |
+|------|--------|--------------|
+| Add transaction | transactions.js | `addTransaction(data, render, update)` |
+| Render list | ui.js | `renderTransactions()` |
+| Update charts | charts.js | `updateInsights()` |
+| Save data | storage.js | `saveToLocalStorage()` |
+| Export CSV | import-export.js | `exportCSV()` |
+| Search | ui.js | `searchTransactions()` |
+
+## TODO List - Active Development Items
+
+### **ID 2** - Mobile responsive improvements for transaction grid
+**Status:** PENDING | **Priority:** P2 | **Scope:** M  
 **Why:** Current `.transaction-item` grid breaks on mobile despite media query  
-**Acceptance Criteria:**
-- [ ] Transaction items stack vertically on screens < 600px
-- [ ] Action buttons remain accessible and properly sized
-- [ ] Touch targets meet 44px minimum for iOS/Android
+**Files:** `styles.css`
 
-**Files to Modify:** `styles.css`
+### **ID 3** - Implement budget customization UI
+**Status:** PENDING | **Priority:** P2 | **Scope:** M  
+**Why:** `DEFAULT_BUDGETS` constant is hardcoded; users need to set their own limits  
+**Approach:** Add "Edit Budgets" button in Insights tab, modal/form to edit, save to localStorage  
+**Files:** `index.html`, `modules/ui.js`, `modules/storage.js`, `styles.css`
 
----
-
-### **ID 3** Implement budget customization UI
-**Status:** PENDING  
-**Priority:** P2 | **Scope:** M  
-**Why:** `BUDGETS` constant is hardcoded; users need to set their own budget limits  
-**Acceptance Criteria:**
-- [ ] Add "Edit Budgets" button in Insights tab
-- [ ] Modal/form to edit each category budget
-- [ ] Save custom budgets to localStorage
-- [ ] Persist across sessions
-
-**Files to Modify:** `index.html`, `script.js`, `styles.css`
-
----
-
-### **ID 4** ✅ Add data backup warning on localStorage quota
-**Status:** COMPLETED (Commit: 623fa4a)  
-**Priority:** P1 | **Scope:** S  
-**Why:** `saveToLocalStorage()` catches errors but user has no proactive warning  
-**Acceptance Criteria:**
-- [x] Check localStorage size before save operations
-- [x] Show warning banner when > 80% quota used
-- [x] Suggest export/cleanup actions
-
-**Files Modified:** `script.js`, `styles.css`
-
----
-
-### **ID 5** Create recurring transaction feature
-**Status:** PENDING  
-**Priority:** P3 | **Scope:** L  
+### **ID 5** - Create recurring transaction feature
+**Status:** PENDING | **Priority:** P3 | **Scope:** L  
 **Why:** Users manually re-enter monthly bills; automation reduces friction  
-**Acceptance Criteria:**
-- [ ] Add "Recurring" checkbox to transaction form
-- [ ] Store recurrence pattern (monthly, weekly, custom interval)
-- [ ] Auto-generate transactions on date rollover
-- [ ] UI to manage recurring templates
+**Approach:** Add "Recurring" checkbox to form, store recurrence pattern, auto-generate on date rollover  
+**Files:** `index.html`, `modules/transactions.js`, `modules/state.js`, `modules/ui.js`, `styles.css`
 
-**Files to Modify:** `index.html`, `script.js`, `styles.css`
-
----
-
-### **ID 6** ✅ Add transaction search/filter by description
-**Status:** COMPLETED (Commit: ef2334b)  
-**Priority:** P2 | **Scope:** S  
-**Why:** Current filter only supports month; users need text search  
-**Acceptance Criteria:**
-- [x] Add search input above transaction list
-- [x] Filter in real-time by description (case-insensitive)
-- [x] Combine with existing month filter
-- [x] Show "X results" count
-
-**Files Modified:** `index.html`, `script.js`, `styles.css`
-
----
-
-### **ID 7** Implement dark mode toggle
-**Status:** PENDING  
-**Priority:** P3 | **Scope:** M  
+### **ID 7** - Implement dark mode toggle
+**Status:** PENDING | **Priority:** P3 | **Scope:** M  
 **Why:** Reduce eye strain for users in low-light environments  
-**Acceptance Criteria:**
-- [ ] Toggle button in header
-- [ ] Dark color scheme applied to all components
-- [ ] Preference saved to localStorage
-- [ ] Smooth transition animations
+**Approach:** Toggle button in header, dark color scheme, preference saved to localStorage  
+**Files:** `index.html`, `modules/ui.js`, `modules/storage.js`, `styles.css`
 
-**Files to Modify:** `index.html`, `script.js`, `styles.css`
-
----
-
-### **ID 8** Add form validation feedback UI
-**Status:** PENDING  
-**Priority:** P2 | **Scope:** S  
+### **ID 8** - Add form validation feedback UI
+**Status:** PENDING | **Priority:** P2 | **Scope:** S  
 **Why:** Current validation uses `alert()` which is intrusive  
-**Acceptance Criteria:**
-- [ ] Replace `alert()` calls with inline error messages
-- [ ] Red border on invalid fields
-- [ ] Error text below each field
-- [ ] Clear errors on successful input
+**Approach:** Replace alerts with inline error messages, red borders on invalid fields  
+**Files:** `modules/ui.js`, `styles.css`
 
-**Files to Modify:** `index.html`, `script.js`, `styles.css`
-
----
-
-### **ID 9** Create data clearing/reset functionality
-**Status:** PENDING  
-**Priority:** P2 | **Scope:** S  
+### **ID 9** - Create data clearing/reset functionality
+**Status:** PENDING | **Priority:** P2 | **Scope:** S  
 **Why:** Users need way to clear demo data or start fresh  
-**Acceptance Criteria:**
-- [ ] "Clear All Data" button in settings/export section
-- [ ] Confirmation dialog with transaction count
-- [ ] Option to export before clearing
-- [ ] Reset to empty state (no demo data)
+**Approach:** "Clear All Data" button with confirmation, option to export before clearing  
+**Files:** `index.html`, `modules/storage.js`, `modules/ui.js`
 
-**Files to Modify:** `index.html`, `script.js`
-
----
-
-### **ID 10** Add keyboard shortcuts for common actions
-**Status:** PENDING  
-**Priority:** P3 | **Scope:** M  
+### **ID 10** - Add keyboard shortcuts for common actions
+**Status:** PENDING | **Priority:** P3 | **Scope:** M  
 **Why:** Power users benefit from quick access; improves efficiency  
-**Acceptance Criteria:**
-- [ ] `Ctrl+N` / `Cmd+N`: Focus new transaction form
-- [ ] `Ctrl+E` / `Cmd+E`: Export data
-- [ ] `Esc`: Cancel edit mode
-- [ ] `?`: Show keyboard shortcuts help modal
+**Shortcuts:** `Ctrl+N`: New transaction, `Ctrl+E`: Export, `Esc`: Cancel edit, `?`: Help  
+**Files:** `script.js`, `index.html`, `styles.css`
 
-**Files to Modify:** `script.js`, `index.html`, `styles.css`
-
----
-
-## Project Structure
-
-```
-/
-├── index.html          # Main HTML structure
-├── script.js           # Application logic (653 lines)
-├── styles.css          # Styling (external CSS)
-├── .gitignore          # Git exclusions
-└── .github/
-    └── copilot-instructions.md  # This file (TODO list)
-```
-
-## Completed Features
-- ✅ CSS separation (styles.css extracted from inline)
-- ✅ Transaction CRUD operations
-- ✅ Edit transaction workflow
-- ✅ CSV/JSON export
-- ✅ CSV/JSON import with validation
-- ✅ Chart.js integration for insights
-- ✅ Budget tracking with visual progress bars
-- ✅ Month-based filtering
-- ✅ LocalStorage persistence
-
-## Technical Notes
-- **No build process** - Pure vanilla HTML/CSS/JS
-- **No dependencies** - Except Chart.js via CDN
-- **Browser target** - Modern evergreen browsers (ES6+)
-- **Storage** - LocalStorage only (no backend)
-
----
-
-## Contributing Guidelines
-1. Work on ONE task at a time
-2. Update this file's status as tasks progress
-3. Test in browser before committing
-4. Keep acceptance criteria as checklist
-5. No scope creep - split large tasks if needed
+## Completed Features ✅
+- Transaction CRUD operations with edit workflow
+- CSV/JSON export and import with validation
+- Chart.js integration for visual insights
+- Budget tracking with progress bars
+- Month-based filtering and description search
+- LocalStorage persistence with quota monitoring
+- Demo data for first-time users
