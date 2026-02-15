@@ -49,6 +49,7 @@ export const DEFAULT_BUDGETS = {
 export const STORAGE_CONFIG = {
     KEY: 'bucks2bar_data',
     BUDGETS_KEY: 'bucks2bar_budgets',
+    DARK_MODE_KEY: 'bucks2bar_dark_mode',
     VERSION: '1.0',
     QUOTA_LIMIT: 5 * 1024 * 1024, // 5MB typical quota
     WARNING_THRESHOLD: 0.8 // 80% usage threshold

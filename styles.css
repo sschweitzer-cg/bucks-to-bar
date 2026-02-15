@@ -1,3 +1,39 @@
+:root {
+    /* Light mode colors */
+    --bg-gradient-start: #667eea;
+    --bg-gradient-end: #764ba2;
+    --container-bg: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #dddddd;
+    --form-bg: #f9f9f9;
+    --input-bg: #ffffff;
+    --input-border: #dddddd;
+    --input-focus: #667eea;
+    --tab-bg: #f5f5f5;
+    --tab-active-bg: #ffffff;
+    --card-bg: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode {
+    /* Dark mode colors */
+    --bg-gradient-start: #1a1a2e;
+    --bg-gradient-end: #16213e;
+    --container-bg: #0f3460;
+    --text-primary: #e8e8e8;
+    --text-secondary: #b8b8b8;
+    --border-color: #2a4d6e;
+    --form-bg: #1a3a52;
+    --input-bg: #16304a;
+    --input-border: #2a4d6e;
+    --input-focus: #53a8e2;
+    --tab-bg: #1a3a52;
+    --tab-active-bg: #0f3460;
+    --card-bg: #1a3a52;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,9 +42,10 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     min-height: 100vh;
     padding: 20px;
+    transition: background 0.3s ease;
 }
 
 .storage-warning {
@@ -87,10 +124,11 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    background: white;
+    background: var(--container-bg);
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 40px var(--shadow-color);
     overflow: hidden;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 header {
@@ -98,6 +136,7 @@ header {
     color: white;
     padding: 30px;
     text-align: center;
+    position: relative;
 }
 
 header h1 {
@@ -110,10 +149,40 @@ header p {
     font-size: 1.1em;
 }
 
+#dark-mode-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+#dark-mode-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#dark-mode-toggle:active {
+    transform: scale(0.95);
+}
+
 .tabs {
     display: flex;
-    background: #f5f5f5;
-    border-bottom: 2px solid #ddd;
+    background: var(--tab-bg);
+    border-bottom: 2px solid var(--border-color);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .tab-button {
@@ -124,16 +193,16 @@ header p {
     cursor: pointer;
     font-size: 1.1em;
     font-weight: 600;
-    color: #666;
+    color: var(--text-secondary);
     transition: all 0.3s;
 }
 
 .tab-button:hover {
-    background: #e8e8e8;
+    background: var(--input-bg);
 }
 
 .tab-button.active {
-    background: white;
+    background: var(--tab-active-bg);
     color: #667eea;
     border-bottom: 3px solid #667eea;
 }
@@ -148,15 +217,17 @@ header p {
 }
 
 .form-section {
-    background: #f9f9f9;
+    background: var(--form-bg);
     padding: 25px;
     border-radius: 8px;
     margin-bottom: 30px;
+    transition: background 0.3s ease;
 }
 
 .form-section h2 {
     margin-bottom: 20px;
-    color: #333;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .form-grid {
@@ -177,9 +248,10 @@ header p {
 
 label {
     margin-bottom: 5px;
-    color: #555;
+    color: var(--text-secondary);
     font-weight: 600;
     font-size: 0.9em;
+    transition: color 0.3s ease;
 }
 
 input[type="number"],
@@ -187,16 +259,18 @@ input[type="date"],
 input[type="text"],
 select {
     padding: 12px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--input-border);
     border-radius: 6px;
     font-size: 1em;
-    transition: border-color 0.3s;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: border-color 0.3s, background 0.3s, color 0.3s;
 }
 
 input:focus,
 select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--input-focus);
 }
 
 .type-toggle {
@@ -336,8 +410,8 @@ button {
     grid-template-columns: 100px 120px 1fr 120px 100px;
     gap: 15px;
     padding: 15px;
-    background: white;
-    border: 1px solid #e0e0e0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 10px;
     align-items: center;
@@ -345,13 +419,14 @@ button {
 }
 
 .transaction-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px var(--shadow-color);
     transform: translateY(-2px);
 }
 
 .transaction-date {
     font-weight: 600;
-    color: #666;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
 }
 
 .transaction-type {
@@ -373,12 +448,14 @@ button {
 }
 
 .transaction-description {
-    color: #333;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .transaction-category {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 0.9em;
+    transition: color 0.3s ease;
 }
 
 .transaction-amount {
@@ -426,12 +503,14 @@ button {
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #999;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
 }
 
 .empty-state h3 {
     font-size: 1.5em;
     margin-bottom: 10px;
+    color: var(--text-primary);
 }
 
 .summary-cards {
@@ -487,7 +566,8 @@ button {
 
 .chart-container h3 {
     margin-bottom: 20px;
-    color: #333;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .budget-section {
@@ -496,15 +576,17 @@ button {
 
 .budget-section h3 {
     margin-bottom: 20px;
-    color: #333;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .budget-item {
-    background: white;
+    background: var(--card-bg);
     padding: 20px;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     margin-bottom: 15px;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .budget-header {
@@ -515,11 +597,13 @@ button {
 
 .budget-category {
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .budget-amount {
-    color: #666;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
 }
 
 .budget-progress {

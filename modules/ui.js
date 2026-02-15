@@ -5,6 +5,7 @@
 
 import { CATEGORIES, CATEGORY_LABELS } from './constants.js';
 import { appState, getFilteredTransactions, setFilter, setSearchQuery, setEditingId } from './state.js';
+import { saveDarkMode, loadDarkMode } from './storage.js';
 
 /**
  * Switches between Data and Insights tabs
@@ -184,4 +185,39 @@ export function resetEditState() {
     document.querySelector('#transaction-form .btn-primary').textContent = 'Add Transaction';
     document.getElementById('cancel-edit-btn').style.display = 'none';
     resetForm();
+}
+
+/**
+ * Toggles dark mode on/off
+ */
+export function toggleDarkMode() {
+    const isDarkMode = !loadDarkMode();
+    
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    saveDarkMode(isDarkMode);
+    
+    // Update toggle button icon
+    const toggleBtn = document.getElementById('dark-mode-toggle');
+    if (toggleBtn) {
+        toggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+        toggleBtn.setAttribute('aria-label', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+}
+
+/**
+ * Initializes dark mode based on saved preference
+ */
+export function initializeDarkMode() {
+    const isDarkMode = loadDarkMode();
+    
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    }
+    
+    // Update toggle button icon
+    const toggleBtn = document.getElementById('dark-mode-toggle');
+    if (toggleBtn) {
+        toggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+        toggleBtn.setAttribute('aria-label', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+    }
 }

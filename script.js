@@ -23,7 +23,9 @@ import {
     searchTransactions, 
     resetForm,
     populateFormForEdit,
-    resetEditState 
+    resetEditState,
+    toggleDarkMode,
+    initializeDarkMode
 } from './modules/ui.js';
 import { updateInsights } from './modules/charts.js';
 import { exportCSV, exportJSON, handleImportFile } from './modules/import-export.js';
@@ -105,6 +107,9 @@ function handleImport(event) {
  * Application initialization
  */
 window.addEventListener('DOMContentLoaded', function() {
+    // Initialize dark mode preference
+    initializeDarkMode();
+    
     // Load data or initialize demo data
     const hasData = loadFromLocalStorage();
     if (!hasData) {
@@ -132,3 +137,4 @@ window.resetEditState = handleResetEditState;
 window.exportCSV = exportCSV;
 window.exportJSON = exportJSON;
 window.handleImportFile = handleImport;
+window.toggleDarkMode = toggleDarkMode;

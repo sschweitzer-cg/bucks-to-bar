@@ -130,5 +130,33 @@ function hideStorageWarning() {
     }
 }
 
+/**
+ * Saves dark mode preference to localStorage
+ * @param {boolean} isDarkMode - Whether dark mode is enabled
+ */
+export function saveDarkMode(isDarkMode) {
+    try {
+        localStorage.setItem(STORAGE_CONFIG.DARK_MODE_KEY, JSON.stringify(isDarkMode));
+    } catch (e) {
+        console.error('Failed to save dark mode preference:', e);
+    }
+}
+
+/**
+ * Loads dark mode preference from localStorage
+ * @returns {boolean} Dark mode preference (defaults to false)
+ */
+export function loadDarkMode() {
+    try {
+        const stored = localStorage.getItem(STORAGE_CONFIG.DARK_MODE_KEY);
+        if (stored !== null) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error('Failed to load dark mode preference:', e);
+    }
+    return false; // Default to light mode
+}
+
 // Make hideStorageWarning globally accessible for inline onclick handlers
 window.hideStorageWarning = hideStorageWarning;
